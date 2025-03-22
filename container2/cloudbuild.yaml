@@ -16,20 +16,14 @@ steps:
     id: 'Push Docker Image'
     args: ['push', 'us-central1-docker.pkg.dev/csci5409-454408/k8s-container2/container2:${SHORT_SHA}']
 
-  # Step 4: Authenticate kubectl with GKE
-  - name: 'gcr.io/cloud-builders/gcloud'
-    id: 'Authenticate kubectl'
-    args: ['container', 'clusters', 'get-credentials', '${_CLUSTER_NAME}', '--zone', '${_CLUSTER_ZONE}', '--project', '${_PROJECT_ID}']
-    env:
-      - 'CLOUDSDK_COMPUTE_ZONE=${_CLUSTER_ZONE}'
-      - 'CLOUDSDK_CONTAINER_CLUSTER=${_CLUSTER_NAME}'
-      - 'CLOUDSDK_GET_CREDENTIALS_OPTS=--quiet'  # Optional: Suppress output
-
-  # Step 5: Update Deployment YAML with the new image tag
+  # Step 6: Update Deployment YAML with the new image tag
   - name: 'gcr.io/cloud-builders/kubectl'
     id: 'Update Deployment YAML'
     args: ['apply', '-f', 'deployment2.yaml']
     dir: 'container2'
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=us-central1-c'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=k8s-cluster'
     entrypoint: 'bash'
     args:
       - '-c'
@@ -37,16 +31,22 @@ steps:
         sed -i "s|us-central1-docker.pkg.dev/csci5409-454408/k8s-container2/container2:.*|us-central1-docker.pkg.dev/csci5409-454408/k8s-container2/container2:${SHORT_SHA}|g" deployment2.yaml
         kubectl apply -f deployment2.yaml
 
-  # Step 6: Apply Service for Container 2
+  # Step 7: Apply Service for Container 2
   - name: 'gcr.io/cloud-builders/kubectl'
     id: 'Expose Container 2'
     args: ['apply', '-f', 'service2.yaml']
     dir: 'container2'
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=us-central1-c'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=k8s-cluster'
 
-  # Step 7: Force a Rollout Restart
+  # Step 8: Force a Rollout Restart
   - name: 'gcr.io/cloud-builders/kubectl'
     id: 'Rollout Restart'
     args: ['rollout', 'restart', 'deployment/k8s-container2']
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=us-central1-c'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=k8s-cluster'
 
 options:
   logging: CLOUD_LOGGING_ONLY
@@ -54,9 +54,3 @@ options:
 # Specify the Artifact Registry as the destination for the Docker image
 images:
   - 'us-central1-docker.pkg.dev/csci5409-454408/k8s-container2/container2:${SHORT_SHA}'
-
-# Define substitution variables for cluster and project details
-substitutions:
-  _CLUSTER_NAME: 'k8s-cluster'
-  _CLUSTER_ZONE: 'us-central1-c'
-  _PROJECT_ID: 'csci5409-454408'
