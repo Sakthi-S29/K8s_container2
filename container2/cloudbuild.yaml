@@ -19,7 +19,7 @@ steps:
   # Step 4: Apply Deployment for Container 2
   - name: 'gcr.io/cloud-builders/kubectl'
     id: 'Deploy Container 2'
-    args: ['apply', '-f', '../k8s_files_container2/deployment2.yaml']
+    args: ['apply', '-f', 'deployment2.yaml']
     env:
       - 'CLOUDSDK_COMPUTE_ZONE=us-central1-c'
       - 'CLOUDSDK_CONTAINER_CLUSTER=k8s-cluster'
@@ -27,7 +27,7 @@ steps:
   # Step 5: Apply Service for Container 2
   - name: 'gcr.io/cloud-builders/kubectl'
     id: 'Expose Container 2'
-    args: ['apply', '-f', '../k8s_files_container2/service2.yaml']
+    args: ['apply', '-f', 'service2.yaml']
     env:
       - 'CLOUDSDK_COMPUTE_ZONE=us-central1-c'
       - 'CLOUDSDK_CONTAINER_CLUSTER=k8s-cluster'
