@@ -19,7 +19,11 @@ steps:
   # Step 4: Authenticate kubectl with GKE
   - name: 'gcr.io/cloud-builders/gcloud'
     id: 'Authenticate kubectl'
-    args: ['container', 'clusters', 'get-credentials', 'k8s-cluster', '--zone', 'us-central1-c', '--project', 'csci5409-454408']
+    args: ['container', 'clusters', 'get-credentials', '${_CLUSTER_NAME}', '--zone', '${_CLUSTER_ZONE}', '--project', '${_PROJECT_ID}']
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=${_CLUSTER_ZONE}'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=${_CLUSTER_NAME}'
+      - 'CLOUDSDK_GET_CREDENTIALS_OPTS=--quiet'  # Optional: Suppress output
 
   # Step 5: Update Deployment YAML with the new image tag
   - name: 'gcr.io/cloud-builders/kubectl'
@@ -50,3 +54,9 @@ options:
 # Specify the Artifact Registry as the destination for the Docker image
 images:
   - 'us-central1-docker.pkg.dev/csci5409-454408/k8s-container2/container2:${SHORT_SHA}'
+
+# Define substitution variables for cluster and project details
+substitutions:
+  _CLUSTER_NAME: 'k8s-cluster'
+  _CLUSTER_ZONE: 'us-central1-c'
+  _PROJECT_ID: 'csci5409-454408'
